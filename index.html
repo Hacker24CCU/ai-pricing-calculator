@@ -129,6 +129,18 @@
             transform: none;
         }
 
+        .btn-secondary {
+            background: #28a745;
+            margin-top: 10px;
+        }
+
+        .btn-feedback {
+            background: #17a2b8;
+            padding: 10px 20px;
+            font-size: 0.95rem;
+            margin-top: 15px;
+        }
+
         .loading {
             display: none;
             text-align: center;
@@ -169,6 +181,12 @@
             margin-bottom: 10px;
         }
 
+        .margin-display {
+            font-size: 1.2rem;
+            color: #1b5e20;
+            font-weight: 600;
+        }
+
         .reasoning {
             background: #f8f9fa;
             border: 1px solid #e9ecef;
@@ -180,6 +198,68 @@
         .reasoning h3 {
             color: #2c3e50;
             margin-bottom: 15px;
+        }
+
+        .recommendations {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .recommendations h3 {
+            color: #1565c0;
+            margin-bottom: 15px;
+        }
+
+        .feedback-section {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .feedback-section h3 {
+            color: #856404;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .feedback-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+
+        .conversation-history {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .conversation-message {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+        }
+
+        .user-message {
+            background: #e3f2fd;
+            border-left: 3px solid #2196f3;
+        }
+
+        .assistant-message {
+            background: #f1f8e9;
+            border-left: 3px solid #8bc34a;
         }
 
         .data-status {
@@ -216,13 +296,6 @@
             font-size: 0.9rem;
         }
 
-        .refresh-btn {
-            background: #28a745;
-            padding: 10px 20px;
-            font-size: 0.9rem;
-            margin-top: 10px;
-        }
-
         @media (max-width: 768px) {
             .main-content {
                 grid-template-columns: 1fr;
@@ -254,7 +327,7 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="location">Location/County:</label>
-                            <input type="text" id="location" required placeholder="e.g., Denver, Weld County">
+                            <input type="text" id="location" required placeholder="e.g., Pitkin, Weld County">
                         </div>
                         <div class="form-group">
                             <label for="volume">Volume Needed:</label>
@@ -267,9 +340,240 @@
                             <label for="product">Product Type:</label>
                             <select id="product" required>
                                 <option value="">Select product...</option>
-                                <option value="Sodium Hypo">Sodium Hypochlorite</option>
-                                <option value="Soda Ash">Soda Ash</option>
+                                <option value="Accu-Tab Tablets">Accu-Tab Tablets</option>
+                                <option value="Accu-Tab Tablets Blue">Accu-Tab Tablets Blue</option>
+                                <option value="Acid Blue">Acid Blue (Acid Magic-replacement)</option>
+                                <option value="Acid Magic">Acid Magic</option>
+                                <option value="Activated Carbon">Activated Carbon</option>
+                                <option value="Aluminum Chloride">Aluminum Chloride</option>
+                                <option value="Aluminum Chlorhydrate">Aluminum Chlorhydrate</option>
+                                <option value="Aluminum Chlorohydrate">Aluminum Chlorohydrate 50% (CC-2000)</option>
+                                <option value="Aluminum Chloride Hydroxide Sulfate">Aluminum Chloride Hydroxide Sulfate</option>
+                                <option value="Aluminum Sulfate Ground">Aluminum Sulfate Ground (Granular)</option>
+                                <option value="Aluminum Sulfate Liquid">Aluminum Sulfate Liquid</option>
+                                <option value="Aluminum Sulfate Powder">Aluminum Sulfate Powder</option>
+                                <option value="Ammonium Hydroxide">Ammonium Hydroxide</option>
+                                <option value="Ammonium Sulfate Granular">Ammonium Sulfate (Granular)</option>
+                                <option value="Ammonium Sulfate Liquid">Ammonium Sulfate Liquid (LAS) NSF</option>
+                                <option value="AQ 101">AQ 101</option>
+                                <option value="AQ 109">AQ 109</option>
+                                <option value="Aqua Mag DR446">Aqua Mag DR446</option>
+                                <option value="Bio-Max">Bio-Max</option>
+                                <option value="Bioxide">Bioxide</option>
+                                <option value="Blended Phosphate">Blended Phosphate</option>
+                                <option value="Bromine">Bromine</option>
+                                <option value="Cairox FF">Cairox FF</option>
+                                <option value="Calcium">Calcium</option>
+                                <option value="Calcium Chloride Flake">Calcium Chloride Flake</option>
+                                <option value="Calcium Hypochlorite">Calcium Hypochlorite</option>
+                                <option value="Calcium Hypochlorite 3in tabs">Calcium Hypochlorite 3" tabs</option>
+                                <option value="Calcium Hypochlorite Granular">Calcium Hypochlorite Granular (Cal-Shock)</option>
+                                <option value="Carbon Dioxide">Carbon Dioxide</option>
+                                <option value="Carus 3180">Carus 3180</option>
+                                <option value="Carus 8600">Carus 8600</option>
+                                <option value="Cat-Floc 8102">Cat-Floc 8102</option>
+                                <option value="Cat-Floc 8103">Cat-Floc 8103</option>
+                                <option value="Cat-Floc 8108">Cat-Floc 8108</option>
+                                <option value="Caustic Soda">Caustic Soda</option>
+                                <option value="Caustic Soda 20%">Caustic Soda 20%</option>
+                                <option value="Caustic Soda 25%">Caustic Soda 25%</option>
+                                <option value="Caustic Soda 30%">Caustic Soda 30%</option>
+                                <option value="Caustic Soda 50%">Caustic Soda 50% (Sodium Hydroxide)</option>
+                                <option value="Caustic Soda Pearl">Caustic Soda - pearl</option>
+                                <option value="Caustic Soda Micropearls">Caustic Soda - Micropearls NSF</option>
+                                <option value="CC 2000">CC 2000</option>
+                                <option value="CC 2210">CC 2210</option>
+                                <option value="CC 2215">CC 2215</option>
+                                <option value="CC 2220">CC 2220</option>
+                                <option value="CC 2250">CC 2250</option>
+                                <option value="CED Struvite Remover">CED Struvite Remover</option>
                                 <option value="Chlorine">Chlorine</option>
+                                <option value="Chlorine Dioxide">Chlorine Dioxide</option>
+                                <option value="Chlorine Gas">Chlorine Gas</option>
+                                <option value="Citric Acid">Citric Acid 50%</option>
+                                <option value="Clarifloc A-210P">Clarifloc A-210P</option>
+                                <option value="Clarifloc C-1400">Clarifloc C-1400</option>
+                                <option value="Clarifloc C-2717">Clarifloc C-2717</option>
+                                <option value="Clarifloc C-3275">Clarifloc C-3275</option>
+                                <option value="Clarifloc C-3287">Clarifloc C-3287</option>
+                                <option value="Clarifloc C-3294">Clarifloc C-3294</option>
+                                <option value="Clarifloc C-308P">Clarifloc C-308P</option>
+                                <option value="Clarifloc C-6253">Clarifloc C-6253</option>
+                                <option value="Clarifloc C-6257">Clarifloc C-6257</option>
+                                <option value="Clarifloc C-6262">Clarifloc C-6262</option>
+                                <option value="Clarifloc C-6266">Clarifloc C-6266</option>
+                                <option value="Clarifloc C-6266A">Clarifloc C-6266A</option>
+                                <option value="Clarifloc C-6276">Clarifloc C-6276</option>
+                                <option value="Clarifloc C-6285">Clarifloc C-6285</option>
+                                <option value="Clarifloc C-6286">Clarifloc C-6286</option>
+                                <option value="Clarifloc C-6292">Clarifloc C-6292</option>
+                                <option value="Clarifloc C-6295">Clarifloc C-6295</option>
+                                <option value="Clarifloc C-9530">Clarifloc C-9530</option>
+                                <option value="Clarifloc C-9545">Clarifloc C-9545</option>
+                                <option value="Clarifloc CE-1042">Clarifloc CE-1042</option>
+                                <option value="Clarifloc CE-1404">Clarifloc CE-1404</option>
+                                <option value="Clarifloc CE-2693">Clarifloc CE-2693</option>
+                                <option value="Clarifloc CE-464">Clarifloc CE-464</option>
+                                <option value="Clarifloc CE-692">Clarifloc CE-692</option>
+                                <option value="Clarifloc PRXB26">Clarifloc PRXB26</option>
+                                <option value="Clar+Ion A5">Clar+Ion A5</option>
+                                <option value="Core Shell 71300">Core Shell 71300</option>
+                                <option value="Core Shell 71301">Core Shell 71301</option>
+                                <option value="Core Shell 71306">Core Shell 71306</option>
+                                <option value="Core Shell 71307">Core Shell 71307</option>
+                                <option value="Core Shell 71325">Core Shell 71325</option>
+                                <option value="Copper Sulfate">Copper Sulfate</option>
+                                <option value="Cyanuric Acid">Cyanuric Acid/Stabilizer</option>
+                                <option value="D-Chlor">D-Chlor</option>
+                                <option value="Dechlorination Tablets">Dechlorination Tablets</option>
+                                <option value="Dowflake">Dowflake - Calcium Chloride 83-87%</option>
+                                <option value="Ferric Chloride">Ferric Chloride 38%</option>
+                                <option value="Ferric Sulfate">Ferric Sulfate 60%</option>
+                                <option value="FilterX 7200">FilterX 7200</option>
+                                <option value="Formula 52">Formula 52</option>
+                                <option value="Glycerin">Glycerin</option>
+                                <option value="Hydrated Lime">Hydrated Lime - Calcium Hydroxide</option>
+                                <option value="Hydrochloric Acid">Hydrochloric Acid 31%/Muriatic Acid</option>
+                                <option value="Hydrochloric Acid 35%">Hydrochloric Acid 35%</option>
+                                <option value="Hydrofluorosilicic Acid">Hydrofluorosilicic Acid 20%-25%</option>
+                                <option value="Hydrofluosilicic Acid 23%">Hydrofluosilicic Acid 23%</option>
+                                <option value="Hydrofloc 1665">Hydrofloc 1665</option>
+                                <option value="Hydrofloc 1687">Hydrofloc 1687</option>
+                                <option value="HydroFloc 750c">HydroFloc 750c</option>
+                                <option value="Hydrogen Peroxide 20%">Hydrogen Peroxide 20%</option>
+                                <option value="Hydrogen Peroxide 30%">Hydrogen Peroxide 30%</option>
+                                <option value="Hydrogen Peroxide 34%">Hydrogen Peroxide 34%</option>
+                                <option value="Hyper+ Ion 1090">Hyper+ Ion 1090</option>
+                                <option value="Hyper+ Ion 4654">Hyper+ Ion 4654</option>
+                                <option value="HyperIon 9084">HyperIon 9084</option>
+                                <option value="Kemira Pax 18">Kemira Pax 18</option>
+                                <option value="Kemira Pax 312">Kemira Pax 312</option>
+                                <option value="Kemira Pax L8">Kemira Pax L8</option>
+                                <option value="Kemira Pax XL6">Kemira Pax XL6</option>
+                                <option value="Kemira Pax XLB">Kemira Pax XLB</option>
+                                <option value="Liquid Ammonium">Liquid Ammonium</option>
+                                <option value="Liquid Carbon Dioxide">Liquid Carbon Dioxide</option>
+                                <option value="Liquid Oxygen">Liquid Oxygen</option>
+                                <option value="Magafloc LT7995">Magafloc LT7995</option>
+                                <option value="Magnafloc LT20">Magnafloc LT20</option>
+                                <option value="Magnesium Hydroxide">Magnesium Hydroxide 58-61%</option>
+                                <option value="Metalsorb PCZ">Metalsorb PCZ</option>
+                                <option value="Methanol">Methanol</option>
+                                <option value="MicroC 2000">MicroC 2000</option>
+                                <option value="Multi-Function Chlorinator">Multi-Function Chlorinator - Dichlor</option>
+                                <option value="Muriatic Acid">Muriatic Acid 9%/15%/22°/31%</option>
+                                <option value="Nalclear 7763">Nalclear 7763</option>
+                                <option value="Nalclear 7766">Nalclear 7766</option>
+                                <option value="Nalclear 8100">Nalclear 8100</option>
+                                <option value="Nalclear 8170">Nalclear 8170</option>
+                                <option value="Nalclear 8173">Nalclear 8173</option>
+                                <option value="Nalclear 8181">Nalclear 8181</option>
+                                <option value="Nalco 7390">Nalco 7390</option>
+                                <option value="Nalco 8102">Nalco 8102</option>
+                                <option value="Nalco 9907">Nalco 9907</option>
+                                <option value="Nalcolyte 8100">Nalcolyte 8100</option>
+                                <option value="Nalmet 1691">Nalmet 1691</option>
+                                <option value="Optimer 7128">Optimer 7128</option>
+                                <option value="Optimer 7139">Optimer 7139</option>
+                                <option value="Optimer 7194">Optimer 7194</option>
+                                <option value="Optimer 8110">Optimer 8110</option>
+                                <option value="Orthophosphate">Orthophosphate</option>
+                                <option value="Permaclean PC-77">Permaclean PC-77</option>
+                                <option value="Permatreat PC-391T">Permatreat PC-391T</option>
+                                <option value="Phosphoric Acid 75%">Phosphoric Acid 75%</option>
+                                <option value="POL-E-ZOLV PL365">POL-E-ZOLV PL365</option>
+                                <option value="Poly Aluminum Chloride">Poly Aluminum Chloride (AS-3030)</option>
+                                <option value="Poly Orthophosphate PT-170">Poly Orthophosphate (PT-170)</option>
+                                <option value="Poly Orthophosphate WSU-137">Poly Orthophosphate (WSU-137)</option>
+                                <option value="PolyFerric Sulfate">PolyFerric Sulfate</option>
+                                <option value="Polymer">Polymer (various types)</option>
+                                <option value="Polymer C591">Polymer C591</option>
+                                <option value="Polymer K110">Polymer K110</option>
+                                <option value="Polymer WT-830A">Polymer (WT-830A)</option>
+                                <option value="Polyphosphate">Polyphosphate</option>
+                                <option value="Potassium Chloride">Potassium Chloride (K-Life)</option>
+                                <option value="Potassium Permanganate">Potassium Permanganate - Powder</option>
+                                <option value="Praestol DW20">Praestol DW20</option>
+                                <option value="Praestol DW22">Praestol DW22</option>
+                                <option value="Praestol DW22S">Praestol DW22S</option>
+                                <option value="Praestol DWS22S">Praestol DWS22S</option>
+                                <option value="Praestol K260">Praestol K260</option>
+                                <option value="Praestol K274">Praestol K274</option>
+                                <option value="Praestol K275">Praestol K275</option>
+                                <option value="Praestol K279">Praestol K279</option>
+                                <option value="Pretreat Liquid Antiscalant">Pretreat Liquid Antiscalant</option>
+                                <option value="Pretreat Plus 100">Pretreat Plus 100</option>
+                                <option value="Pretreat Plus Antiscalant">Pretreat Plus Antiscalant</option>
+                                <option value="Pretreat Plus Select">Pretreat Plus Select</option>
+                                <option value="Puri-Cal">Puri-Cal</option>
+                                <option value="RootX">RootX</option>
+                                <option value="Salt">Salt - Water Softening (SureSoft XCS)</option>
+                                <option value="Seaquest Dry">Seaquest Dry</option>
+                                <option value="Seaquest Liquid">Seaquest Liquid</option>
+                                <option value="Soda Ash Dense">Soda Ash Dense (Sodium Carbonate)</option>
+                                <option value="Soda Ash Light">Soda Ash Light (Sodium Carbonate)</option>
+                                <option value="Sodium Aluminate">Sodium Aluminate 33%/38%</option>
+                                <option value="Sodium Bicarbonate">Sodium Bicarbonate</option>
+                                <option value="Sodium Bisulfate">Sodium Bisulfate</option>
+                                <option value="Sodium Bisulfite">Sodium Bisulfite 38-43%</option>
+                                <option value="Sodium Chlorite">Sodium Chlorite</option>
+                                <option value="Sodium Fluoride">Sodium Fluoride</option>
+                                <option value="Sodium Fluorosilicate">Sodium Fluorosilicate</option>
+                                <option value="Sodium Hydroxide">Sodium Hydroxide (See Caustic Soda)</option>
+                                <option value="Sodium Hypochlorite 5.5%">Sodium Hypochlorite 5.5%</option>
+                                <option value="Sodium Hypochlorite 10%">Sodium Hypochlorite 10%</option>
+                                <option value="Sodium Hypochlorite 12.5%">Sodium Hypochlorite 12.5%</option>
+                                <option value="Sodium Metabisulfite">Sodium Metabisulfite</option>
+                                <option value="Sodium Metasilicate">Sodium Metasilicate</option>
+                                <option value="Sodium Permanganate">Sodium Permanganate 40%</option>
+                                <option value="Sodium Phosphate">Sodium Phosphate</option>
+                                <option value="Sodium Silicate">Sodium Silicate N CLEAR NSF</option>
+                                <option value="Sodium Silicofluoride">Sodium Silicofluoride</option>
+                                <option value="Sodium Sulfate">Sodium Sulfate</option>
+                                <option value="Sodium Thiosulfate">Sodium Thiosulfate</option>
+                                <option value="Solve 218B">Solve 218B</option>
+                                <option value="SpectraGuard">SpectraGuard</option>
+                                <option value="Sulfate of Potash">Sulfate of Potash</option>
+                                <option value="Sulfur Dioxide">Sulfur Dioxide</option>
+                                <option value="Sulfuric Acid 35%">Sulfuric Acid 35-36%</option>
+                                <option value="Sulfuric Acid 50%">Sulfuric Acid 50%</option>
+                                <option value="Sulfuric Acid 66BE">Sulfuric Acid 66BE</option>
+                                <option value="Sulfuric Acid 93%">Sulfuric Acid 93%</option>
+                                <option value="Sulfuric Acid 99%">Sulfuric Acid 99%</option>
+                                <option value="Sumaclear">Sumaclear (various types)</option>
+                                <option value="Sumaclear 50">Sumaclear 50</option>
+                                <option value="Sumaclear 700">Sumaclear 700</option>
+                                <option value="Sumaclear 750">Sumaclear 750</option>
+                                <option value="Sumaclear 1000">Sumaclear 1000</option>
+                                <option value="Sumaclear P20">Sumaclear P20</option>
+                                <option value="Sumaclear P30">Sumaclear P30</option>
+                                <option value="Superfloc C1600">Superfloc C1600</option>
+                                <option value="SVENFLOC C4640">SVENFLOC C4640</option>
+                                <option value="SWT 8809">SWT 8809</option>
+                                <option value="T-Floc">T-Floc (various types)</option>
+                                <option value="T-Floc 1416">T-Floc 1416</option>
+                                <option value="T-Floc 1419">T-Floc 1419</option>
+                                <option value="T-Floc 1465">T-Floc 1465</option>
+                                <option value="T-Floc B-41">T-Floc B-41</option>
+                                <option value="T-Floc B-135">T-Floc B-135</option>
+                                <option value="T-Floc PN3100">T-Floc PN3100</option>
+                                <option value="Torch LT">Torch LT</option>
+                                <option value="Torch Z">Torch Z</option>
+                                <option value="TriChlor Tablets">TriChlor 3" Tablets</option>
+                                <option value="Trioxyn">Trioxyn</option>
+                                <option value="Ultrion 8157">Ultrion 8157</option>
+                                <option value="Ultrion 8185">Ultrion 8185</option>
+                                <option value="Ultrion 8187">Ultrion 8187</option>
+                                <option value="Urea">Urea</option>
+                                <option value="Vita-D-Chlor">Vita-D-Chlor</option>
+                                <option value="WPH 1000">WPH 1000</option>
+                                <option value="Zetag 7557">Zetag 7557</option>
+                                <option value="Zetag 7878">Zetag 7878</option>
+                                <option value="Zetag 8846">Zetag 8846</option>
+                                <option value="Zetag 8848">Zetag 8848</option>
+                                <option value="Zetag 8849">Zetag 8849</option>
+                                <option value="Zetag 8858">Zetag 8858</option>
+                                <option value="Zetag 8868">Zetag 8868</option>
                                 <option value="Other">Other</option>
                             </select>
                         </div>
@@ -302,7 +606,7 @@
                         <textarea id="specialRequirements" rows="3" placeholder="Any special delivery, quality, or service requirements..."></textarea>
                     </div>
 
-                    <button class="btn refresh-btn" type="button" onclick="loadCompetitorData()">
+                    <button class="btn btn-secondary" type="button" onclick="loadCompetitorData()">
                         📊 Load Competitor Data
                     </button>
                     <div id="dataStatus"></div>
@@ -324,7 +628,7 @@
                 <div id="results" class="results">
                     <div class="price-result">
                         <div class="price-amount" id="recommendedPrice">$4.25/gallon</div>
-                        <p id="priceConfidence">Recommended competitive price</p>
+                        <div class="margin-display" id="marginDisplay">40% Gross Profit</div>
                     </div>
 
                     <div class="reasoning">
@@ -332,6 +636,27 @@
                         <div id="pricingReasoning">
                             <p>Detailed analysis will appear here...</p>
                         </div>
+                    </div>
+
+                    <div class="recommendations" id="recommendationsSection" style="display: none;">
+                        <h3>💡 Strategic Recommendations</h3>
+                        <div id="strategicRecommendations"></div>
+                    </div>
+
+                    <!-- Feedback Section -->
+                    <div class="feedback-section">
+                        <h3>💬 Follow-up or Correction</h3>
+                        <p style="font-size: 0.9rem; margin-bottom: 10px;">Have feedback or want to adjust the recommendation?</p>
+                        <textarea id="feedbackInput" class="feedback-input" rows="3" placeholder="e.g., 'This seems too high, can you recalculate with a lower margin?' or 'Did you consider that this is a rush order?'"></textarea>
+                        <button class="btn btn-feedback" id="submitFeedback">
+                            🔄 Re-analyze with Feedback
+                        </button>
+                    </div>
+
+                    <!-- Conversation History -->
+                    <div class="conversation-history" id="conversationHistory" style="display: none;">
+                        <h4 style="margin-bottom: 10px; font-size: 1rem;">Conversation History:</h4>
+                        <div id="conversationMessages"></div>
                     </div>
                 </div>
 
@@ -347,6 +672,9 @@
         // Global variables
         let competitorData = [];
         let isLoading = false;
+        let conversationHistory = [];
+        let currentCustomerDetails = null;
+        let currentRelevantData = null;
 
         // Load competitor data from Google Sheets via Netlify Function
         async function loadCompetitorData() {
@@ -384,35 +712,128 @@
         }
 
         // Filter competitor data based on customer details
-        
-        
-       function filterRelevantData(customerDetails) {
-    if (!competitorData.length) return [];
+        function filterRelevantData(customerDetails) {
+            if (!competitorData.length) return [];
 
-    const filtered = competitorData.filter(row => {
-        // Location match
-        const locationMatch = 
-            (row.County && row.County.toLowerCase().includes(customerDetails.location.toLowerCase())) ||
-            (row.District && row.District.toLowerCase().includes(customerDetails.location.toLowerCase())) ||
-            (row['Water system served'] && row['Water system served'].toLowerCase().includes(customerDetails.location.toLowerCase()));
+            const filtered = competitorData.filter(row => {
+                // Location match
+                const locationMatch = 
+                    (row.County && row.County.toLowerCase().includes(customerDetails.location.toLowerCase())) ||
+                    (row.District && row.District.toLowerCase().includes(customerDetails.location.toLowerCase())) ||
+                    (row['Water system served'] && row['Water system served'].toLowerCase().includes(customerDetails.location.toLowerCase()));
 
-        // Product match (handle variations)
-        let productMatch = true;
-        if (customerDetails.product && customerDetails.product !== 'Other') {
-            const searchTerm = customerDetails.product.toLowerCase().replace(' hypo', ''); // "Sodium"
-            productMatch = row['Product purchased'] && 
-                          row['Product purchased'].toLowerCase().includes(searchTerm.toLowerCase());
+                // Product match (handle variations)
+                let productMatch = true;
+                if (customerDetails.product && customerDetails.product !== 'Other') {
+                    const searchTerms = customerDetails.product.toLowerCase().split(/[\s-]+/);
+                    productMatch = row['Product purchased'] && 
+                                  searchTerms.some(term => row['Product purchased'].toLowerCase().includes(term));
+                }
+
+                // REQUIRE BOTH location AND product to match
+                return locationMatch && productMatch;
+            });
+
+            console.log(`Found ${filtered.length} matching rows for ${customerDetails.location}`);
+            return filtered.slice(0, 20);
         }
 
-        // REQUIRE BOTH location AND product to match
-        return locationMatch && productMatch;
-    });
+        // Submit feedback and re-analyze
+        document.getElementById('submitFeedback').addEventListener('click', async function() {
+            const feedbackText = document.getElementById('feedbackInput').value.trim();
+            
+            if (!feedbackText) {
+                alert('Please enter your feedback or question');
+                return;
+            }
 
-    console.log(`Found ${filtered.length} matching rows for ${customerDetails.location}`);
-    return filtered.slice(0, 20);
-}
+            if (!currentCustomerDetails || !currentRelevantData) {
+                alert('Please run an initial analysis first');
+                return;
+            }
 
+            // Add user feedback to conversation history
+            conversationHistory.push({
+                role: 'user',
+                content: feedbackText
+            });
 
+            // Clear feedback input
+            document.getElementById('feedbackInput').value = '';
+
+            // Show loading
+            const loadingDiv = document.getElementById('loading');
+            const resultsDiv = document.getElementById('results');
+            loadingDiv.style.display = 'block';
+            resultsDiv.style.display = 'none';
+
+            try {
+                // Call Claude API with conversation history
+                const response = await fetch('/.netlify/functions/get-claude-analysis', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        customerDetails: currentCustomerDetails,
+                        relevantData: currentRelevantData,
+                        conversationHistory: conversationHistory
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Claude API error: ${errorText}`);
+                }
+
+                const result = await response.json();
+
+                // Add assistant response to conversation history
+                conversationHistory.push({
+                    role: 'assistant',
+                    content: result.reasoning
+                });
+
+                // Update UI with new results
+                document.getElementById('recommendedPrice').textContent = result.price || 'See analysis below';
+                document.getElementById('marginDisplay').textContent = result.margin || '';
+                document.getElementById('pricingReasoning').innerHTML = 
+                    result.reasoning.split('\n').map(line => `<p>${line}</p>`).join('');
+
+                if (result.recommendations) {
+                    document.getElementById('strategicRecommendations').innerHTML = 
+                        result.recommendations.split('\n').map(line => `<p>${line}</p>`).join('');
+                    document.getElementById('recommendationsSection').style.display = 'block';
+                }
+
+                // Update conversation history display
+                updateConversationDisplay();
+
+                loadingDiv.style.display = 'none';
+                resultsDiv.style.display = 'block';
+
+            } catch (error) {
+                console.error('Error:', error);
+                loadingDiv.style.display = 'none';
+                alert(`Error re-analyzing: ${error.message}`);
+            }
+        });
+
+        // Update conversation history display
+        function updateConversationDisplay() {
+            const historyDiv = document.getElementById('conversationHistory');
+            const messagesDiv = document.getElementById('conversationMessages');
+            
+            if (conversationHistory.length > 0) {
+                historyDiv.style.display = 'block';
+                messagesDiv.innerHTML = conversationHistory.map(msg => 
+                    `<div class="conversation-message ${msg.role}-message">
+                        <strong>${msg.role === 'user' ? 'Your Feedback' : 'Claude'}:</strong><br>
+                        ${msg.content.substring(0, 150)}${msg.content.length > 150 ? '...' : ''}
+                    </div>`
+                ).join('');
+            }
+        }
         
         // Handle form submission
         document.getElementById('pricingForm').addEventListener('submit', async function(e) {
@@ -437,21 +858,31 @@
             resultsDiv.style.display = 'none';
             competitorPreview.style.display = 'none';
 
+            // Reset conversation for new request
+            conversationHistory = [];
+            document.getElementById('conversationHistory').style.display = 'none';
+
             try {
                 const customerDetails = {
-                    location: document.getElementById('location').value,
-                    volume: document.getElementById('volume').value,
+                    location: document.getElementById('location').value.trim(), // Auto-trim spaces
+                    volume: document.getElementById('volume').value.trim(),
                     product: document.getElementById('product').value,
                     timeline: document.getElementById('timeline').value,
                     customerType: document.getElementById('customerType').value,
-                    specialRequirements: document.getElementById('specialRequirements').value
+                    specialRequirements: document.getElementById('specialRequirements').value.trim()
                 };
+
+                // Store for feedback functionality
+                currentCustomerDetails = customerDetails;
 
                 const relevantData = filterRelevantData(customerDetails);
                 
                 if (relevantData.length === 0) {
-                    throw new Error('No relevant competitor data found for this location/product');
+                    throw new Error('No relevant competitor data found for this location/product. Claude will use neighboring counties.');
                 }
+
+                // Store for feedback functionality
+                currentRelevantData = relevantData;
 
                 // Show competitor data preview
                 const competitorDataDiv = document.getElementById('competitorData');
@@ -471,7 +902,8 @@
                     },
                     body: JSON.stringify({
                         customerDetails,
-                        relevantData
+                        relevantData,
+                        conversationHistory: []
                     })
                 });
 
@@ -483,8 +915,17 @@
                 const result = await response.json();
                 
                 document.getElementById('recommendedPrice').textContent = result.price || 'See analysis below';
+                document.getElementById('marginDisplay').textContent = result.margin || '';
                 document.getElementById('pricingReasoning').innerHTML = 
                     result.reasoning.split('\n').map(line => `<p>${line}</p>`).join('');
+
+                if (result.recommendations) {
+                    document.getElementById('strategicRecommendations').innerHTML = 
+                        result.recommendations.split('\n').map(line => `<p>${line}</p>`).join('');
+                    document.getElementById('recommendationsSection').style.display = 'block';
+                } else {
+                    document.getElementById('recommendationsSection').style.display = 'none';
+                }
 
                 loadingDiv.style.display = 'none';
                 resultsDiv.style.display = 'block';
