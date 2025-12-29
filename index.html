@@ -687,7 +687,7 @@
         </div>
     </div>
 
-    <script>
+   <script>
         // Global variables
         let competitorData = [];
         let isLoading = false;
@@ -740,20 +740,18 @@
 
         // Parse date from various formats
         function parseDate(dateStr) {
-            if (!dateStr) return new Date(0); // Return very old date if no date
+            if (!dateStr) return new Date(0);
             
-            // Try standard date parsing first
             let date = new Date(dateStr);
             if (!isNaN(date.getTime())) return date;
             
-            // Try MM/DD/YYYY format
             const parts = dateStr.split('/');
             if (parts.length === 3) {
                 date = new Date(parts[2], parts[0] - 1, parts[1]);
                 if (!isNaN(date.getTime())) return date;
             }
             
-            return new Date(0); // Return very old date if parsing fails
+            return new Date(0);
         }
 
         // Get neighboring counties for geographic expansion
@@ -763,39 +761,129 @@
             for (const [region, counties] of Object.entries(countyGroups)) {
                 const found = counties.find(c => c.toLowerCase() === normalized);
                 if (found) {
-                    // Return all counties in same region except the requested one
                     return counties.filter(c => c.toLowerCase() !== normalized);
                 }
             }
             
-            // If not in any group, return all counties
             return Object.values(countyGroups).flat();
         }
 
-        // Smart data sampling with recency and geographic diversity
+        // Check if product name matches with better logic
+        function productMatches(productPurchased, searchProduct) {
+            if (!searchProduct || searchProduct === 'Other') return true;
+            if (!productPurchased) return false;
+
+            const purchased = productPurchased.toLowerCase();
+            const search = searchProduct.toLowerCase();
+
+            // Exact match
+            if (purchased === search) return true;
+
+            // Contains exact product name
+            if (purchased.includes(search)) return true;
+
+            // For multi-word products, check if all significant words are present
+            const searchWords = search.split(/[\s-]+/).filter(word => 
+                word.length > 2 && !['the', 'and', 'or'].includes(word)
+            );
+
+            // If search has multiple words, ALL must be present
+            if (searchWords.length > 1) {
+                return searchWords.every(word => purchased.includes(word));
+            }
+
+            // Single word search - must be present
+            return searchWords.length === 1 && purchased.includes(searchWords[0]);
+        }
+
+        // Check if location matches
+        function locationMatches(row, locationSearch) {
+            const county = (row.County || '').toLowerCase();
+            const district = (row.District || '').toLowerCase();
+            const waterSystem = (row['Water system served'] || '').toLowerCase();
+            const search = locationSearch.toLowerCase();
+
+            return county.includes(search) || 
+                   district.includes(search) || 
+                   waterSystem.includes(search) ||
+                   search.includes(county) ||
+                   search.includes(district);
+        }
+
+        // Smart data sampling with automatic geographic expansion
         function filterRelevantData(customerDetails) {
-            if (!competitorData.length) return { data: [], message: '' };
+            if (!competitorData.length) return { data: [], message: 'No competitor data loaded.', locations: [] };
 
             const locationSearch = customerDetails.location.toLowerCase().trim();
             
             // Step 1: Filter by product
-            const productMatches = competitorData.filter(row => {
-                if (!customerDetails.product || customerDetails.product === 'Other') return true;
-                
-                const searchTerms = customerDetails.product.toLowerCase().split(/[\s-]+/);
-                return row['Product purchased'] && 
-                       searchTerms.some(term => row['Product purchased'].toLowerCase().includes(term));
-            });
+            const productMatches = competitorData.filter(row => 
+                productMatches(row['Product purchased'], customerDetails.product)
+            );
 
             console.log(`Found ${productMatches.length} product matches for "${customerDetails.product}"`);
 
             if (productMatches.length === 0) {
-                return { data: [], message: 'No data found for this product statewide.' };
+                return { 
+                    data: [], 
+                    message: `No data found for "${customerDetails.product}" in any Colorado county.`,
+                    locations: []
+                };
             }
 
-            // Step 2: Group by location (County + District/Town)
+            // Step 2: Try to match requested location first
+            const requestedLocationMatches = productMatches.filter(row => 
+                locationMatches(row, locationSearch)
+            );
+
+            console.log(`Found ${requestedLocationMatches.length} matches in requested location`);
+
+            // Step 3: Decide on geographic expansion strategy
+            let dataPool = [];
+            let expansionMessage = '';
+            let searchScope = '';
+
+            if (requestedLocationMatches.length >= 5) {
+                // Plenty of data in requested location
+                dataPool = requestedLocationMatches;
+                searchScope = 'requested location';
+                expansionMessage = `✅ Found ${requestedLocationMatches.length} records in ${customerDetails.location}`;
+            } else if (requestedLocationMatches.length > 0) {
+                // Some data in requested location, but expand to neighbors too
+                const neighboringCounties = getNeighboringCounties(locationSearch);
+                const neighborMatches = productMatches.filter(row => {
+                    const county = (row.County || '').toLowerCase();
+                    return neighboringCounties.some(nc => county.includes(nc.toLowerCase()));
+                });
+                
+                dataPool = [...requestedLocationMatches, ...neighborMatches];
+                searchScope = 'requested location + neighboring counties';
+                expansionMessage = `ℹ️ Found ${requestedLocationMatches.length} records in ${customerDetails.location}, expanded to ${dataPool.length} total with neighboring counties`;
+            } else {
+                // No data in requested location - expand to neighbors first
+                const neighboringCounties = getNeighboringCounties(locationSearch);
+                const neighborMatches = productMatches.filter(row => {
+                    const county = (row.County || '').toLowerCase();
+                    return neighboringCounties.some(nc => county.includes(nc.toLowerCase()));
+                });
+
+                if (neighborMatches.length >= 5) {
+                    dataPool = neighborMatches;
+                    searchScope = 'neighboring counties';
+                    expansionMessage = `ℹ️ No data in ${customerDetails.location} - using ${neighborMatches.length} records from neighboring counties`;
+                } else {
+                    // Still not enough - go statewide
+                    dataPool = productMatches;
+                    searchScope = 'statewide';
+                    expansionMessage = `ℹ️ Limited regional data - using ${productMatches.length} records from across Colorado`;
+                }
+            }
+
+            console.log(`Data pool after expansion: ${dataPool.length} rows (${searchScope})`);
+
+            // Step 4: Group by location (County + District/Town)
             const locationGroups = {};
-            productMatches.forEach(row => {
+            dataPool.forEach(row => {
                 const county = (row.County || '').trim();
                 const district = (row.District || row['Water system served'] || '').trim();
                 const locationKey = `${county}|${district}`;
@@ -806,69 +894,43 @@
                 locationGroups[locationKey].push(row);
             });
 
-            console.log(`Grouped into ${Object.keys(locationGroups).length} unique locations`);
-
-            // Step 3: Sort each location group by Date of Invoice (most recent first)
+            // Step 5: Sort each location group by Date of Invoice (most recent first)
             Object.keys(locationGroups).forEach(key => {
                 locationGroups[key].sort((a, b) => {
                     const dateA = parseDate(a['Date of Invoice']);
                     const dateB = parseDate(b['Date of Invoice']);
-                    return dateB - dateA; // Descending (newest first)
+                    return dateB - dateA;
                 });
             });
 
-            // Step 4: Prioritize locations by match quality
-            const requestedLocations = [];
-            const neighboringLocations = [];
-            const otherLocations = [];
-
-            const neighboringCounties = getNeighboringCounties(locationSearch);
-
+            // Step 6: Prioritize locations - requested first, then neighbors, then others
+            const prioritizedLocations = [];
+            
             Object.entries(locationGroups).forEach(([key, rows]) => {
                 const [county, district] = key.split('|');
-                const countyLower = county.toLowerCase();
-                const districtLower = district.toLowerCase();
+                const isRequested = locationMatches({ County: county, District: district, 'Water system served': district }, locationSearch);
+                const neighboringCounties = getNeighboringCounties(locationSearch);
+                const isNeighbor = neighboringCounties.some(nc => county.toLowerCase().includes(nc.toLowerCase()));
                 
-                // Check if matches requested location
-                const matchesRequested = 
-                    countyLower.includes(locationSearch) ||
-                    districtLower.includes(locationSearch) ||
-                    locationSearch.includes(countyLower) ||
-                    locationSearch.includes(districtLower);
-                
-                if (matchesRequested) {
-                    requestedLocations.push({ key, rows, county, district });
-                } else {
-                    // Check if in neighboring counties
-                    const isNeighbor = neighboringCounties.some(nc => 
-                        countyLower.includes(nc.toLowerCase())
-                    );
-                    
-                    if (isNeighbor) {
-                        neighboringLocations.push({ key, rows, county, district });
-                    } else {
-                        otherLocations.push({ key, rows, county, district });
-                    }
-                }
+                prioritizedLocations.push({
+                    key,
+                    rows,
+                    county,
+                    district,
+                    priority: isRequested ? 1 : (isNeighbor ? 2 : 3)
+                });
             });
 
-            // Step 5: Sample up to 3 most recent rows per location, prioritizing requested county
+            prioritizedLocations.sort((a, b) => a.priority - b.priority);
+
+            // Step 7: Sample up to 3 most recent rows per location
             const MAX_PER_LOCATION = 3;
             const MAX_TOTAL_ROWS = 25;
             
             const sampledData = [];
             const locationsSampled = [];
 
-            // Sample from requested locations first
-            for (const loc of requestedLocations) {
-                if (sampledData.length >= MAX_TOTAL_ROWS) break;
-                const sampled = loc.rows.slice(0, MAX_PER_LOCATION);
-                sampledData.push(...sampled);
-                locationsSampled.push(`${loc.county} - ${loc.district} (${sampled.length} records)`);
-            }
-
-            // Then neighboring locations
-            for (const loc of neighboringLocations) {
+            for (const loc of prioritizedLocations) {
                 if (sampledData.length >= MAX_TOTAL_ROWS) break;
                 const remaining = MAX_TOTAL_ROWS - sampledData.length;
                 const sampled = loc.rows.slice(0, Math.min(MAX_PER_LOCATION, remaining));
@@ -876,33 +938,21 @@
                 locationsSampled.push(`${loc.county} - ${loc.district} (${sampled.length} records)`);
             }
 
-            // Finally other locations if still under limit
-            for (const loc of otherLocations) {
-                if (sampledData.length >= MAX_TOTAL_ROWS) break;
-                const remaining = MAX_TOTAL_ROWS - sampledData.length;
-                const sampled = loc.rows.slice(0, Math.min(MAX_PER_LOCATION, remaining));
-                sampledData.push(...sampled);
-                locationsSampled.push(`${loc.county} - ${loc.district} (${sampled.length} records)`);
-            }
-
-            // Generate sampling message
-            let message = '';
+            // Generate final message
+            let finalMessage = expansionMessage;
             if (sampledData.length < 5) {
-                message = `⚠️ Limited data - only ${sampledData.length} competitor records found statewide`;
-            } else if (requestedLocations.length === 0) {
-                message = `ℹ️ No data for "${customerDetails.location}" - expanded search to nearby areas`;
+                finalMessage = `⚠️ Limited data - only ${sampledData.length} competitor records found (${searchScope})`;
             } else if (sampledData.length >= MAX_TOTAL_ROWS) {
-                message = `✅ Using ${sampledData.length} most recent records from ${locationsSampled.length} locations (${MAX_PER_LOCATION} per location)`;
-            } else {
-                message = `✅ Found ${sampledData.length} relevant records from ${locationsSampled.length} locations`;
+                finalMessage = `${expansionMessage}<br><small>Sampled ${sampledData.length} most recent records from ${locationsSampled.length} locations</small>`;
             }
 
             console.log(`Final sample: ${sampledData.length} rows from ${locationsSampled.length} locations`);
 
             return { 
                 data: sampledData, 
-                message: message,
-                locations: locationsSampled
+                message: finalMessage,
+                locations: locationsSampled,
+                searchScope: searchScope
             };
         }
 
@@ -920,23 +970,19 @@
                 return;
             }
 
-            // Add user feedback to conversation history
             conversationHistory.push({
                 role: 'user',
                 content: feedbackText
             });
 
-            // Clear feedback input
             document.getElementById('feedbackInput').value = '';
 
-            // Show loading
             const loadingDiv = document.getElementById('loading');
             const resultsDiv = document.getElementById('results');
             loadingDiv.style.display = 'block';
             resultsDiv.style.display = 'none';
 
             try {
-                // Call Claude API with conversation history
                 const response = await fetch('/.netlify/functions/get-claude-analysis', {
                     method: 'POST',
                     headers: {
@@ -956,13 +1002,11 @@
 
                 const result = await response.json();
 
-                // Add assistant response to conversation history
                 conversationHistory.push({
                     role: 'assistant',
                     content: result.reasoning
                 });
 
-                // Update UI with new results
                 document.getElementById('recommendedPrice').textContent = result.price || 'See analysis below';
                 document.getElementById('marginDisplay').textContent = result.margin || '';
                 document.getElementById('pricingReasoning').innerHTML = 
@@ -974,7 +1018,6 @@
                     document.getElementById('recommendationsSection').style.display = 'block';
                 }
 
-                // Update conversation history display
                 updateConversationDisplay();
 
                 loadingDiv.style.display = 'none';
@@ -987,7 +1030,6 @@
             }
         });
 
-        // Update conversation history display
         function updateConversationDisplay() {
             const historyDiv = document.getElementById('conversationHistory');
             const messagesDiv = document.getElementById('conversationMessages');
@@ -1003,7 +1045,6 @@
             }
         }
         
-        // Handle form submission
         document.getElementById('pricingForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -1026,7 +1067,6 @@
             resultsDiv.style.display = 'none';
             competitorPreview.style.display = 'none';
 
-            // Reset conversation for new request
             conversationHistory = [];
             document.getElementById('conversationHistory').style.display = 'none';
 
@@ -1040,42 +1080,45 @@
                     specialRequirements: document.getElementById('specialRequirements').value.trim()
                 };
 
-                // Store for feedback functionality
                 currentCustomerDetails = customerDetails;
 
                 const filterResult = filterRelevantData(customerDetails);
                 
-                // Show warning for limited data
-                if (filterResult.data.length < 5) {
+                // Show info message for any data limitations
+                if (filterResult.data.length < 5 || filterResult.searchScope !== 'requested location') {
                     const statusDiv = document.getElementById('dataStatus');
                     statusDiv.innerHTML = `<div class="warning">${filterResult.message}</div>`;
                 }
 
+                // Even with 0 results, send to Claude
                 if (filterResult.data.length === 0) {
-                    throw new Error(filterResult.message);
+                    const statusDiv = document.getElementById('dataStatus');
+                    statusDiv.innerHTML = `<div class="warning">${filterResult.message}<br>Claude will provide general industry pricing guidance.</div>`;
                 }
 
-                // Store for feedback functionality
                 currentRelevantData = filterResult.data;
 
                 // Show sampling info and competitor data preview
                 const samplingInfoDiv = document.getElementById('samplingInfo');
                 samplingInfoDiv.innerHTML = `
-                    <strong>${filterResult.message}</strong><br>
-                    <small>Locations: ${filterResult.locations.slice(0, 5).join(', ')}${filterResult.locations.length > 5 ? '...' : ''}</small>
+                    <strong>${filterResult.message}</strong>
+                    ${filterResult.locations.length > 0 ? `<br><small>Locations: ${filterResult.locations.slice(0, 5).join(', ')}${filterResult.locations.length > 5 ? '...' : ''}</small>` : ''}
                 `;
 
                 const competitorDataDiv = document.getElementById('competitorData');
-                competitorDataDiv.innerHTML = filterResult.data.slice(0, 10).map(row => 
-                    `<div class="competitor-row">
-                        ${row['Date of Invoice'] || 'N/A'} | ${row.Supplier || 'Unknown'} - ${row['Product purchased'] || 'N/A'} - 
-                        $${row['Price per Gal/Lbs'] || 'N/A'} - ${row.County || 'Unknown'} ${row.District ? '(' + row.District + ')' : ''}
-                    </div>`
-                ).join('') + (filterResult.data.length > 10 ? `<div class="competitor-row"><em>...and ${filterResult.data.length - 10} more records</em></div>` : '');
+                if (filterResult.data.length > 0) {
+                    competitorDataDiv.innerHTML = filterResult.data.slice(0, 10).map(row => 
+                        `<div class="competitor-row">
+                            ${row['Date of Invoice'] || 'N/A'} | ${row.Supplier || 'Unknown'} - ${row['Product purchased'] || 'N/A'} - 
+                            $${row['Price per Gal/Lbs'] || 'N/A'} - ${row.County || 'Unknown'} ${row.District ? '(' + row.District + ')' : ''}
+                        </div>`
+                    ).join('') + (filterResult.data.length > 10 ? `<div class="competitor-row"><em>...and ${filterResult.data.length - 10} more records</em></div>` : '');
+                } else {
+                    competitorDataDiv.innerHTML = '<div class="competitor-row"><em>No competitor data available</em></div>';
+                }
                 
                 competitorPreview.style.display = 'block';
 
-                // Call Claude API via Netlify Function
                 const response = await fetch('/.netlify/functions/get-claude-analysis', {
                     method: 'POST',
                     headers: {
@@ -1122,7 +1165,6 @@
             }
         });
 
-        // Auto-load on page ready
         document.addEventListener('DOMContentLoaded', function() {
             loadCompetitorData();
         });
