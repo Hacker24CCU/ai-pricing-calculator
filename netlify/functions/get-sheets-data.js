@@ -13,7 +13,7 @@ exports.handler = async (event, context) => {
     const SHEETS_ID = process.env.GOOGLE_SHEETS_ID;
     const API_KEY = process.env.GOOGLE_API_KEY;
     const SHEETS_RANGE = 'CO Chemical Research - Table!A:Z';
-
+    
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEETS_ID}/values/${SHEETS_RANGE}?key=${API_KEY}`;
     
     const response = await fetch(url);
@@ -45,7 +45,6 @@ exports.handler = async (event, context) => {
         count: parsedData.length
       })
     };
-
   } catch (error) {
     console.error('Error:', error);
     return {
