@@ -697,11 +697,11 @@
 
         // County relationships for smart geographic expansion
         const countyGroups = {
-            mountain: ['Pitkin', 'Eagle', 'Summit', 'Grand', 'Garfield', 'Lake', 'Routt', 'Clear Creek', 'Gilpin', 'Park'],
-            plains: ['Weld', 'Larimer', 'Adams', 'Boulder', 'Broomfield', 'Denver', 'Arapahoe', 'Jefferson', 'Douglas', 'El Paso'],
-            western: ['Mesa', 'Delta', 'Montrose', 'Gunnison', 'Ouray', 'San Miguel', 'Dolores', 'Montezuma', 'La Plata'],
-            southern: ['Pueblo', 'Fremont', 'Custer', 'Huerfano', 'Las Animas', 'Alamosa', 'Costilla', 'Conejos']
-        };
+    mountain: ['Pitkin', 'Eagle', 'Summit', 'Grand', 'Garfield', 'Lake', 'Routt', 'Clear Creek', 'Gilpin', 'Park', 'Chaffee', 'Hinsdale', 'San Juan', 'Mineral', 'Saguache'],
+    plains: ['Weld', 'Larimer', 'Adams', 'Boulder', 'Broomfield', 'Denver', 'Arapahoe', 'Jefferson', 'Douglas', 'El Paso', 'Teller', 'Elbert', 'Morgan', 'Logan', 'Washington', 'Kit Carson', 'Phillips', 'Yuma', 'Lincoln', 'Cheyenne', 'Crowley', 'Bent', 'Baca'],
+    western: ['Mesa', 'Delta', 'Montrose', 'Gunnison', 'Ouray', 'San Miguel', 'Dolores', 'Montezuma', 'La Plata', 'Rio Blanco', 'Moffat'],
+    southern: ['Pueblo', 'Fremont', 'Custer', 'Huerfano', 'Las Animas', 'Alamosa', 'Costilla', 'Conejos', 'Otero', 'Rio Grande', 'Archuleta']
+};
 
         // Load competitor data from Google Sheets via Netlify Function
         async function loadCompetitorData() {
