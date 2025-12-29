@@ -384,22 +384,36 @@
         }
 
         // Filter competitor data based on customer details
-        function filterRelevantData(customerDetails) {
-            if (!competitorData.length) return [];
+        
+        
+       function filterRelevantData(customerDetails) {
+    if (!competitorData.length) return [];
 
-            return competitorData.filter(row => {
-                const locationMatch = 
-                    (row.County && row.County.toLowerCase().includes(customerDetails.location.toLowerCase())) ||
-                    (row.District && row.District.toLowerCase().includes(customerDetails.location.toLowerCase())) ||
-                    (row['Water system served'] && row['Water system served'].toLowerCase().includes(customerDetails.location.toLowerCase()));
+    const filtered = competitorData.filter(row => {
+        // Location match
+        const locationMatch = 
+            (row.County && row.County.toLowerCase().includes(customerDetails.location.toLowerCase())) ||
+            (row.District && row.District.toLowerCase().includes(customerDetails.location.toLowerCase())) ||
+            (row['Water system served'] && row['Water system served'].toLowerCase().includes(customerDetails.location.toLowerCase()));
 
-                const productMatch = !customerDetails.product || customerDetails.product === 'Other' ||
-                    (row['Product purchased'] && row['Product purchased'].toLowerCase().includes(customerDetails.product.toLowerCase()));
-
-                return locationMatch || productMatch;
-            }).slice(0, 20);
+        // Product match (handle variations)
+        let productMatch = true;
+        if (customerDetails.product && customerDetails.product !== 'Other') {
+            const searchTerm = customerDetails.product.toLowerCase().replace(' hypo', ''); // "Sodium"
+            productMatch = row['Product purchased'] && 
+                          row['Product purchased'].toLowerCase().includes(searchTerm.toLowerCase());
         }
 
+        // REQUIRE BOTH location AND product to match
+        return locationMatch && productMatch;
+    });
+
+    console.log(`Found ${filtered.length} matching rows for ${customerDetails.location}`);
+    return filtered.slice(0, 20);
+}
+
+
+        
         // Handle form submission
         document.getElementById('pricingForm').addEventListener('submit', async function(e) {
             e.preventDefault();
