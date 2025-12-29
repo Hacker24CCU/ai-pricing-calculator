@@ -687,7 +687,7 @@
         </div>
     </div>
 
-   <script>
+  <script>
         // Global variables
         let competitorData = [];
         let isLoading = false;
@@ -817,13 +817,13 @@
             const locationSearch = customerDetails.location.toLowerCase().trim();
             
             // Step 1: Filter by product
-            const productMatches = competitorData.filter(row => 
+            const productMatchedRows = competitorData.filter(row => 
                 productMatches(row['Product purchased'], customerDetails.product)
             );
 
-            console.log(`Found ${productMatches.length} product matches for "${customerDetails.product}"`);
+            console.log(`Found ${productMatchedRows.length} product matches for "${customerDetails.product}"`);
 
-            if (productMatches.length === 0) {
+            if (productMatchedRows.length === 0) {
                 return { 
                     data: [], 
                     message: `No data found for "${customerDetails.product}" in any Colorado county.`,
@@ -832,7 +832,7 @@
             }
 
             // Step 2: Try to match requested location first
-            const requestedLocationMatches = productMatches.filter(row => 
+            const requestedLocationMatches = productMatchedRows.filter(row => 
                 locationMatches(row, locationSearch)
             );
 
@@ -851,7 +851,7 @@
             } else if (requestedLocationMatches.length > 0) {
                 // Some data in requested location, but expand to neighbors too
                 const neighboringCounties = getNeighboringCounties(locationSearch);
-                const neighborMatches = productMatches.filter(row => {
+                const neighborMatches = productMatchedRows.filter(row => {
                     const county = (row.County || '').toLowerCase();
                     return neighboringCounties.some(nc => county.includes(nc.toLowerCase()));
                 });
@@ -862,7 +862,7 @@
             } else {
                 // No data in requested location - expand to neighbors first
                 const neighboringCounties = getNeighboringCounties(locationSearch);
-                const neighborMatches = productMatches.filter(row => {
+                const neighborMatches = productMatchedRows.filter(row => {
                     const county = (row.County || '').toLowerCase();
                     return neighboringCounties.some(nc => county.includes(nc.toLowerCase()));
                 });
@@ -873,9 +873,9 @@
                     expansionMessage = `ℹ️ No data in ${customerDetails.location} - using ${neighborMatches.length} records from neighboring counties`;
                 } else {
                     // Still not enough - go statewide
-                    dataPool = productMatches;
+                    dataPool = productMatchedRows;
                     searchScope = 'statewide';
-                    expansionMessage = `ℹ️ Limited regional data - using ${productMatches.length} records from across Colorado`;
+                    expansionMessage = `ℹ️ Limited regional data - using ${productMatchedRows.length} records from across Colorado`;
                 }
             }
 
