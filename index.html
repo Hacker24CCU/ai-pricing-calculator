@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Pricing Calculator</title>
+    <title>AI Pricing Calculator v2</title>
     <style>
         * {
             margin: 0;
@@ -271,6 +271,15 @@
             font-size: 0.9rem;
         }
 
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #856404;
+        }
+
         .error {
             background: #ffebee;
             border: 1px solid #f44336;
@@ -281,7 +290,7 @@
         }
 
         .competitor-preview {
-            max-height: 200px;
+            max-height: 300px;
             overflow-y: auto;
             background: white;
             border: 1px solid #ddd;
@@ -293,6 +302,15 @@
         .competitor-row {
             padding: 8px 0;
             border-bottom: 1px solid #eee;
+            font-size: 0.9rem;
+        }
+
+        .sampling-info {
+            background: #e8f5e9;
+            border: 1px solid #4caf50;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
             font-size: 0.9rem;
         }
 
@@ -315,8 +333,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🤖 AI Pricing Calculator</h1>
-            <p>Intelligent competitive pricing with real-time market analysis</p>
+            <h1>🤖 AI Pricing Calculator v2</h1>
+            <p>Intelligent competitive pricing with smart data sampling</p>
         </div>
 
         <div class="main-content">
@@ -326,8 +344,8 @@
                 <form id="pricingForm">
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="location">Location/County:</label>
-                            <input type="text" id="location" required placeholder="e.g., Pitkin, Weld County">
+                            <label for="location">Location/County/Town:</label>
+                            <input type="text" id="location" required placeholder="e.g., Pitkin, Aspen, Weld County">
                         </div>
                         <div class="form-group">
                             <label for="volume">Volume Needed:</label>
@@ -661,7 +679,8 @@
                 </div>
 
                 <div id="competitorPreview" class="competitor-preview" style="display: none;">
-                    <h4>📊 Relevant Competitor Data</h4>
+                    <h4>📊 Data Sources Used</h4>
+                    <div id="samplingInfo" class="sampling-info"></div>
                     <div id="competitorData"></div>
                 </div>
             </div>
@@ -675,6 +694,14 @@
         let conversationHistory = [];
         let currentCustomerDetails = null;
         let currentRelevantData = null;
+
+        // County relationships for smart geographic expansion
+        const countyGroups = {
+            mountain: ['Pitkin', 'Eagle', 'Summit', 'Grand', 'Garfield', 'Lake', 'Routt', 'Clear Creek', 'Gilpin', 'Park'],
+            plains: ['Weld', 'Larimer', 'Adams', 'Boulder', 'Broomfield', 'Denver', 'Arapahoe', 'Jefferson', 'Douglas', 'El Paso'],
+            western: ['Mesa', 'Delta', 'Montrose', 'Gunnison', 'Ouray', 'San Miguel', 'Dolores', 'Montezuma', 'La Plata'],
+            southern: ['Pueblo', 'Fremont', 'Custer', 'Huerfano', 'Las Animas', 'Alamosa', 'Costilla', 'Conejos']
+        };
 
         // Load competitor data from Google Sheets via Netlify Function
         async function loadCompetitorData() {
@@ -704,38 +731,179 @@
                     </div>
                 `;
 
-                console.log('Loaded competitor data:', competitorData.slice(0, 3));
+                console.log('Loaded competitor data:', competitorData.length, 'rows');
             } catch (error) {
                 console.error('Error loading data:', error);
                 statusDiv.innerHTML = `<div class="error">Error loading data: ${error.message}</div>`;
             }
         }
 
-        // Filter competitor data based on customer details
-        function filterRelevantData(customerDetails) {
-            if (!competitorData.length) return [];
+        // Parse date from various formats
+        function parseDate(dateStr) {
+            if (!dateStr) return new Date(0); // Return very old date if no date
+            
+            // Try standard date parsing first
+            let date = new Date(dateStr);
+            if (!isNaN(date.getTime())) return date;
+            
+            // Try MM/DD/YYYY format
+            const parts = dateStr.split('/');
+            if (parts.length === 3) {
+                date = new Date(parts[2], parts[0] - 1, parts[1]);
+                if (!isNaN(date.getTime())) return date;
+            }
+            
+            return new Date(0); // Return very old date if parsing fails
+        }
 
-            const filtered = competitorData.filter(row => {
-                // Location match
-                const locationMatch = 
-                    (row.County && row.County.toLowerCase().includes(customerDetails.location.toLowerCase())) ||
-                    (row.District && row.District.toLowerCase().includes(customerDetails.location.toLowerCase())) ||
-                    (row['Water system served'] && row['Water system served'].toLowerCase().includes(customerDetails.location.toLowerCase()));
-
-                // Product match (handle variations)
-                let productMatch = true;
-                if (customerDetails.product && customerDetails.product !== 'Other') {
-                    const searchTerms = customerDetails.product.toLowerCase().split(/[\s-]+/);
-                    productMatch = row['Product purchased'] && 
-                                  searchTerms.some(term => row['Product purchased'].toLowerCase().includes(term));
+        // Get neighboring counties for geographic expansion
+        function getNeighboringCounties(requestedCounty) {
+            const normalized = requestedCounty.toLowerCase().replace(/\s+county/i, '').trim();
+            
+            for (const [region, counties] of Object.entries(countyGroups)) {
+                const found = counties.find(c => c.toLowerCase() === normalized);
+                if (found) {
+                    // Return all counties in same region except the requested one
+                    return counties.filter(c => c.toLowerCase() !== normalized);
                 }
+            }
+            
+            // If not in any group, return all counties
+            return Object.values(countyGroups).flat();
+        }
 
-                // REQUIRE BOTH location AND product to match
-                return locationMatch && productMatch;
+        // Smart data sampling with recency and geographic diversity
+        function filterRelevantData(customerDetails) {
+            if (!competitorData.length) return { data: [], message: '' };
+
+            const locationSearch = customerDetails.location.toLowerCase().trim();
+            
+            // Step 1: Filter by product
+            const productMatches = competitorData.filter(row => {
+                if (!customerDetails.product || customerDetails.product === 'Other') return true;
+                
+                const searchTerms = customerDetails.product.toLowerCase().split(/[\s-]+/);
+                return row['Product purchased'] && 
+                       searchTerms.some(term => row['Product purchased'].toLowerCase().includes(term));
             });
 
-            console.log(`Found ${filtered.length} matching rows for ${customerDetails.location}`);
-            return filtered.slice(0, 20);
+            console.log(`Found ${productMatches.length} product matches for "${customerDetails.product}"`);
+
+            if (productMatches.length === 0) {
+                return { data: [], message: 'No data found for this product statewide.' };
+            }
+
+            // Step 2: Group by location (County + District/Town)
+            const locationGroups = {};
+            productMatches.forEach(row => {
+                const county = (row.County || '').trim();
+                const district = (row.District || row['Water system served'] || '').trim();
+                const locationKey = `${county}|${district}`;
+                
+                if (!locationGroups[locationKey]) {
+                    locationGroups[locationKey] = [];
+                }
+                locationGroups[locationKey].push(row);
+            });
+
+            console.log(`Grouped into ${Object.keys(locationGroups).length} unique locations`);
+
+            // Step 3: Sort each location group by Date of Invoice (most recent first)
+            Object.keys(locationGroups).forEach(key => {
+                locationGroups[key].sort((a, b) => {
+                    const dateA = parseDate(a['Date of Invoice']);
+                    const dateB = parseDate(b['Date of Invoice']);
+                    return dateB - dateA; // Descending (newest first)
+                });
+            });
+
+            // Step 4: Prioritize locations by match quality
+            const requestedLocations = [];
+            const neighboringLocations = [];
+            const otherLocations = [];
+
+            const neighboringCounties = getNeighboringCounties(locationSearch);
+
+            Object.entries(locationGroups).forEach(([key, rows]) => {
+                const [county, district] = key.split('|');
+                const countyLower = county.toLowerCase();
+                const districtLower = district.toLowerCase();
+                
+                // Check if matches requested location
+                const matchesRequested = 
+                    countyLower.includes(locationSearch) ||
+                    districtLower.includes(locationSearch) ||
+                    locationSearch.includes(countyLower) ||
+                    locationSearch.includes(districtLower);
+                
+                if (matchesRequested) {
+                    requestedLocations.push({ key, rows, county, district });
+                } else {
+                    // Check if in neighboring counties
+                    const isNeighbor = neighboringCounties.some(nc => 
+                        countyLower.includes(nc.toLowerCase())
+                    );
+                    
+                    if (isNeighbor) {
+                        neighboringLocations.push({ key, rows, county, district });
+                    } else {
+                        otherLocations.push({ key, rows, county, district });
+                    }
+                }
+            });
+
+            // Step 5: Sample up to 3 most recent rows per location, prioritizing requested county
+            const MAX_PER_LOCATION = 3;
+            const MAX_TOTAL_ROWS = 25;
+            
+            const sampledData = [];
+            const locationsSampled = [];
+
+            // Sample from requested locations first
+            for (const loc of requestedLocations) {
+                if (sampledData.length >= MAX_TOTAL_ROWS) break;
+                const sampled = loc.rows.slice(0, MAX_PER_LOCATION);
+                sampledData.push(...sampled);
+                locationsSampled.push(`${loc.county} - ${loc.district} (${sampled.length} records)`);
+            }
+
+            // Then neighboring locations
+            for (const loc of neighboringLocations) {
+                if (sampledData.length >= MAX_TOTAL_ROWS) break;
+                const remaining = MAX_TOTAL_ROWS - sampledData.length;
+                const sampled = loc.rows.slice(0, Math.min(MAX_PER_LOCATION, remaining));
+                sampledData.push(...sampled);
+                locationsSampled.push(`${loc.county} - ${loc.district} (${sampled.length} records)`);
+            }
+
+            // Finally other locations if still under limit
+            for (const loc of otherLocations) {
+                if (sampledData.length >= MAX_TOTAL_ROWS) break;
+                const remaining = MAX_TOTAL_ROWS - sampledData.length;
+                const sampled = loc.rows.slice(0, Math.min(MAX_PER_LOCATION, remaining));
+                sampledData.push(...sampled);
+                locationsSampled.push(`${loc.county} - ${loc.district} (${sampled.length} records)`);
+            }
+
+            // Generate sampling message
+            let message = '';
+            if (sampledData.length < 5) {
+                message = `⚠️ Limited data - only ${sampledData.length} competitor records found statewide`;
+            } else if (requestedLocations.length === 0) {
+                message = `ℹ️ No data for "${customerDetails.location}" - expanded search to nearby areas`;
+            } else if (sampledData.length >= MAX_TOTAL_ROWS) {
+                message = `✅ Using ${sampledData.length} most recent records from ${locationsSampled.length} locations (${MAX_PER_LOCATION} per location)`;
+            } else {
+                message = `✅ Found ${sampledData.length} relevant records from ${locationsSampled.length} locations`;
+            }
+
+            console.log(`Final sample: ${sampledData.length} rows from ${locationsSampled.length} locations`);
+
+            return { 
+                data: sampledData, 
+                message: message,
+                locations: locationsSampled
+            };
         }
 
         // Submit feedback and re-analyze
@@ -864,7 +1032,7 @@
 
             try {
                 const customerDetails = {
-                    location: document.getElementById('location').value.trim(), // Auto-trim spaces
+                    location: document.getElementById('location').value.trim(),
                     volume: document.getElementById('volume').value.trim(),
                     product: document.getElementById('product').value,
                     timeline: document.getElementById('timeline').value,
@@ -875,23 +1043,36 @@
                 // Store for feedback functionality
                 currentCustomerDetails = customerDetails;
 
-                const relevantData = filterRelevantData(customerDetails);
+                const filterResult = filterRelevantData(customerDetails);
                 
-                if (relevantData.length === 0) {
-                    throw new Error('No relevant competitor data found for this location/product. Claude will use neighboring counties.');
+                // Show warning for limited data
+                if (filterResult.data.length < 5) {
+                    const statusDiv = document.getElementById('dataStatus');
+                    statusDiv.innerHTML = `<div class="warning">${filterResult.message}</div>`;
+                }
+
+                if (filterResult.data.length === 0) {
+                    throw new Error(filterResult.message);
                 }
 
                 // Store for feedback functionality
-                currentRelevantData = relevantData;
+                currentRelevantData = filterResult.data;
 
-                // Show competitor data preview
+                // Show sampling info and competitor data preview
+                const samplingInfoDiv = document.getElementById('samplingInfo');
+                samplingInfoDiv.innerHTML = `
+                    <strong>${filterResult.message}</strong><br>
+                    <small>Locations: ${filterResult.locations.slice(0, 5).join(', ')}${filterResult.locations.length > 5 ? '...' : ''}</small>
+                `;
+
                 const competitorDataDiv = document.getElementById('competitorData');
-                competitorDataDiv.innerHTML = relevantData.slice(0, 5).map(row => 
+                competitorDataDiv.innerHTML = filterResult.data.slice(0, 10).map(row => 
                     `<div class="competitor-row">
-                        ${row.Supplier || 'Unknown'} - ${row['Product purchased'] || 'N/A'} - 
-                        $${row['Price per Gal/Lbs'] || 'N/A'} - ${row.County || row.District || 'Unknown location'}
+                        ${row['Date of Invoice'] || 'N/A'} | ${row.Supplier || 'Unknown'} - ${row['Product purchased'] || 'N/A'} - 
+                        $${row['Price per Gal/Lbs'] || 'N/A'} - ${row.County || 'Unknown'} ${row.District ? '(' + row.District + ')' : ''}
                     </div>`
-                ).join('');
+                ).join('') + (filterResult.data.length > 10 ? `<div class="competitor-row"><em>...and ${filterResult.data.length - 10} more records</em></div>` : '');
+                
                 competitorPreview.style.display = 'block';
 
                 // Call Claude API via Netlify Function
@@ -902,7 +1083,7 @@
                     },
                     body: JSON.stringify({
                         customerDetails,
-                        relevantData,
+                        relevantData: filterResult.data,
                         conversationHistory: []
                     })
                 });
